@@ -1,0 +1,25 @@
+{{- range $key, $definition := .Values.persistent }}
+---
+{{- if and $definition.pvcreation }}
+# PV {{ print $key }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $definition.pvname }}
+spec:
+  accessModes:
+    - {{ $definition.accessModes }}
+  capacity:
+    storage: {{ $definition.storage }}
+  mountOptions:
+    - {{ $definition.mountOptions }}
+  nfs:
+    path: {{ $definition.path }}
+    server: {{ $.Values.nfsserver }}
+  persistentVolumeReclaimPolicy:
+    {{ $definition.persistentVolumeReclaimPolicy }}
+  storageClassName: {{$definition.storageClass.storageClassName}}
+  
+{{- end }}
+
+{{- end }}

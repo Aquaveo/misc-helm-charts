@@ -1,0 +1,17 @@
+{{- range $key, $definition := .Values.persistent }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{$definition.pvcname}}
+spec:
+  accessModes:
+    - {{ $definition.accessModes }}
+  resources:
+    requests:
+      storage: {{$definition.storage}}
+  {{- if and $definition.pvcreation }}
+  volumeName: {{$definition.pvname}}
+  {{- end }}
+  storageClassName: {{$definition.storageClass.storageClassName}}
+{{- end }}
