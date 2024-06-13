@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "djangocms.fullname" . }}
+  labels:
+{{- include "djangocms.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.externalPort }}
+      targetPort: {{ .Values.service.internalPort }}
+      name: main-node
+  selector:
+    app.kubernetes.io/name: {{ include "djangocms.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -1,0 +1,401 @@
+tolerations: []
+podSecurityContext: {}
+securityContext: {}
+
+common-image-stuff: &common-image-stuff
+  tag: '1.8.3'
+
+service: &common-service-definition
+  type: ClusterIP
+  servicePort: 8080
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+
+volumes: &common-volumes # this comes from the config initContainer
+  vol-local-gscloud:
+    emptyDir: {}
+  # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
+  tmp-empty-dir:
+    emptyDir: {}
+
+volumeMounts: &common-volume-mounts
+  /etc/localconfig:
+    name: vol-local-gscloud
+  # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
+  /tmp/:
+    name: 'tmp-empty-dir'
+
+ports: &common-ports
+  http:
+    containerPort: 8080
+    hostIP: 127.0.0.1
+  health:
+    containerPort: 8081
+    hostIP: 127.0.0.1
+
+resources: &common-resources
+  requests:
+    memory: 512Mi
+    cpu: 0.1
+  limits:
+    memory: 4Gi
+    cpu: 4.0
+
+env: &common-env
+  GEOSERVER_BASE_PATH:
+    # NB: do not put a trailing '/' character
+    value: '/geoserver-cloud'
+  SPRING_PROFILES_ACTIVE:
+    # this must be explicitly overridden with either
+    # "standalone,jdbcconfig,kube" or "standalone,datadir,kube"
+    value: not-set
+  GWC_ENABLED:
+    value: 'true'
+  JAVA_OPTS_DEFAULT:
+    value: '-DALLOW_ENV_PARAMETRIZATION=true -XX:MaxRAMPercentage=80 -XX:InitialRAMPercentage=80'
+  JAVA_OPTS:
+    order: 1
+    value: '$(JAVA_OPTS_DEFAULT)'
+  GEOTOOLS_HTTPCLIENT_PROXY_ENABLED:
+    value: 'false'
+  APP_KUBERNETES_IO_INSTANCE:
+    type: 'valueFrom'
+    valueFrom:
+      fieldRef:
+        fieldPath: "metadata.labels['app.kubernetes.io/instance']"
+  APP_KUBERNETES_IO_NAME:
+    type: 'valueFrom'
+    valueFrom:
+      fieldRef:
+        fieldPath: "metadata.labels['app.kubernetes.io/name']"
+  APP_KUBERNETES_IO_COMPONENT:
+    type: 'valueFrom'
+    valueFrom:
+      fieldRef:
+        fieldPath: "metadata.labels['app.kubernetes.io/component']"
+  SERVICE_GATEWAY_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_GATEWAY_NAME
+  SERVICE_GWC_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_GWC_NAME
+  SERVICE_REST_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_REST_NAME
+  SERVICE_WCS_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_WCS_NAME
+  SERVICE_WEBUI_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_WEBUI_NAME
+  SERVICE_WFS_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_WFS_NAME
+  SERVICE_WMS_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_WMS_NAME
+  SERVICE_WPS_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_WPS_NAME
+  SERVICE_ACL_NAME:
+    type: 'configMap'
+    name: self-metadata
+    key: SERVICE_ACL_NAME
+  TARGETS_WMS:
+    order: 1
+    value: 'http://$(SERVICE_WMS_NAME):8080'
+  TARGETS_WFS:
+    order: 1
+    value: 'http://$(SERVICE_WFS_NAME):8080'
+  TARGETS_WPS:
+    order: 1
+    value: 'http://$(SERVICE_WPS_NAME):8080'
+  TARGETS_WCS:
+    order: 1
+    value: 'http://$(SERVICE_WCS_NAME):8080'
+  TARGETS_GWC:
+    order: 1
+    value: 'http://$(SERVICE_GWC_NAME):8080'
+  TARGETS_REST:
+    order: 1
+    value: 'http://$(SERVICE_REST_NAME):8080'
+  TARGETS_WEBUI:
+    order: 1
+    value: 'http://$(SERVICE_WEBUI_NAME):8080'
+  TARGETS_ACL:
+    order: 1
+    value: 'http://$(SERVICE_ACL_NAME):8080'
+  ACL_URL:
+    order: 1
+    value: 'http://$(SERVICE_ACL_NAME):8080/acl/api'
+  ACL_USERNAME:
+    value: 'geoserver'
+
+common-spring-container-stuff: &common-spring-container-stuff
+  resources:
+    <<: *common-resources
+  ports:
+    <<: *common-ports
+  volumeMounts:
+    <<: *common-volume-mounts
+  env:
+    <<: *common-env
+
+geoserver-spring-livenessProbe: &geoserver-spring-livenessProbe
+  httpGet:
+    path: /actuator/health/liveness
+    port: health
+  periodSeconds: 10
+  failureThreshold: 10
+  initialDelaySeconds: 60
+geoserver-spring-readinessProbe: &geoserver-spring-readinessProbe
+  httpGet:
+    path: /actuator/health/readiness
+    port: health
+  periodSeconds: 5
+
+common-generic-stuff: &common-generic-stuff
+  releaseTrunc: 45
+  prefixTrunc: 51
+  template: true
+  replicaCount: 1
+  nameOverride: 'gsc'
+  initContainers:
+    {}
+    #<<: *common-init-containers
+  nodeSelector: {}
+  affinity: {}
+
+geoserver:
+  metadata:
+    enabled: true
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  ingress:
+    enabled: false
+    # For example #
+    # hostGroups:
+    #   host1:
+    #     tls:
+    #       enabled: false
+    #       secretName: 'my-tls-secret'
+    #     hosts:
+    #       - one.example.com
+    #       - two.example.com
+    #   host2:
+    #     tls:
+    #       enabled: true
+    #       secretName: 'my-wildcard-tls-secret'
+    #     hosts:
+    #       - '*.example.com'
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: default
+  services:
+    gateway:
+      enabled: true
+      ingress:
+        # NB: if .Values.gscloud.ingress.enabled=true put true here as well
+        enabled: false
+        path: /geoserver-cloud/
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-gateway
+            sha: ''
+    webui:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-webui
+            sha: ''
+    rest:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-rest
+            sha: ''
+    wfs:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-wfs
+            sha: ''
+    wms:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-wms
+            sha: ''
+    wcs:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-wcs
+            sha: ''
+    wps:
+      enabled: false
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-wps
+            sha: ''
+    gwc:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          livenessProbe:
+            <<: *geoserver-spring-livenessProbe
+          readinessProbe:
+            <<: *geoserver-spring-readinessProbe
+          image:
+            <<: *common-image-stuff
+            repository: geoservercloud/geoserver-cloud-gwc
+            sha: ''
+    acl:
+      enabled: false
+      ingress:
+        enabled: false
+      <<: *common-generic-stuff
+      service:
+        <<: *common-service-definition
+      volumes:
+        <<: *common-volumes
+      containers:
+        spring:
+          <<: *common-spring-container-stuff
+          env:
+            GEOSERVER_BUS_ENABLED:
+              value: 'true'
+            PG_HOST:
+              value: 'acldb'
+            PG_PORT:
+              value: '5432'
+            PG_DB:
+              value: 'acl'
+            PG_SCHEMA:
+              value: 'acl'
+            PG_USERNAME:
+              value: 'acl'
+          image:
+            tag: '2.2.0'
+            repository: geoservercloud/geoserver-acl
+            sha: ''

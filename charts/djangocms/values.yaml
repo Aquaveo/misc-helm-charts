@@ -1,0 +1,102 @@
+# Default values for djangocms.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: gioelkin/django-cms
+  pullPolicy: IfNotPresent
+  tag: 'v1.1'
+postgis:
+  enabled: true
+  fullnameOverride: 'djangocms-db'
+  postgres_user: postgres
+  postgres_password: 'pass'
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  externalPort: 3000
+  internalPort: 80
+
+env:
+  - name: DJANGOCMS_DB_NAME
+    value: 'djangocms'
+  - name: DJANGOCMS_DB_USER
+    value: 'djangocmsadmin'
+  - name: DJANGOCMS_DB_PWD
+    value: 'pass'
+  - name: DJANGOCMS_DB_HOST
+    value: 'djangocms-db'
+  - name: DJANGOCMS_DB_PORT
+    value: '5432'
+  - name: DJANGO_SUPERUSER_USERNAME
+    value: 'admin'
+  - name: DJANGO_SUPERUSER_EMAIL
+    value: 'example@gmail.com'
+  - name: DJANGO_SUPERUSER_PASSWORD
+    value: 'pass'
+  - name: DJANGOCMS_ADMIN_DB_USER
+    value: 'postgres'
+  - name: DJANGOCMS_ADMIN_DB_PWD
+    value: 'pass'
+  - name: DEFAULT_STORAGE_DSN
+    value: '=file:///data/media/?url=%2Fmedia%2F'
+  - name: DEBUG
+    value: 'False'
+  - name: DOMAIN_ALIASES
+    value: 'localhost, 127.0.0.1'
+  - name: SECURE_SSL_REDIRECT
+    value: 'False'
+  - name: DOMAIN
+    value: 'localhost'
+  # - name: SKIP_CREATION_USER
+  #   value: 'undone'
+
+storage_size: 2Gi
+persistentVolumeClaim:
+  name: 'djangocms-pv-claim'
+  accessModes:
+    - ReadWriteOnce
+storageClass:
+  createClass: false
+  provisioner: ''
+  storageClassName: ''
+  parameters:
+    provisioningMode: ''
+    fileSystemId: ''
+    directoryPerms: ''
+    gidRangeStart: ''
+    gidRangeEnd: ''
+    basePath: ''
+  allowVolumeExpansion: true
+  volumeBindingMode: ''
+  mountOptions: []
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: ''
+  annotations: {}
+  hosts:
+    - host: localhost
+      paths:
+        - /
+
+  tls: []
+
+resources:
+  requests:
+    memory: '2Gi'
+    cpu: '1'
+  limits:
+    memory: '4Gi'
+nodeSelector: {}
+tolerations: []
+affinity: {}

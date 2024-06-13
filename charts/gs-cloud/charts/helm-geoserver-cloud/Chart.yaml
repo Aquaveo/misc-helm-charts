@@ -1,0 +1,9 @@
+apiVersion: v2
+description: A Helm chart for Geoserver-cloud
+name: geoservercloud
+version: 0.1.0
+dependencies:
+  - name: custom-pod
+    repository: https://camptocamp.github.io/helm-custom-pod/
+    alias: geoserver
+    version: 2.2.0
