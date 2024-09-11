@@ -25,8 +25,8 @@ jobs:
       - name: Run chart-releaser for gs-cloud
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-          oci_registry: ghcr.io/romer8
-          oci_username: romer8
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/gs-cloud
@@ -34,8 +34,8 @@ jobs:
       - name: Run chart-releaser thredds
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-          oci_registry: ghcr.io/romer8
-          oci_username: romer8
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/thredds
@@ -43,8 +43,8 @@ jobs:
       - name: Run chart-releaser geoserver
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-          oci_registry: ghcr.io/romer8
-          oci_username: romer8
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/geoserver
@@ -52,8 +52,8 @@ jobs:
       - name: Run chart-releaser postgis
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-          oci_registry: ghcr.io/romer8
-          oci_username: romer8
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/postgis
@@ -61,8 +61,8 @@ jobs:
       - name: Run chart-releaser djangocms
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-          oci_registry: ghcr.io/romer8
-          oci_username: romer8
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/djangocms
