@@ -15,10 +15,10 @@ spec:
     - {{ $definition.mountOptions }}
   nfs:
     path: {{ $definition.path }}
-    server: {{ $.Values.nfsserver }}
+    server: {{ $definition.nfsserver }}
   persistentVolumeReclaimPolicy:
     {{ $definition.persistentVolumeReclaimPolicy }}
-  storageClassName: {{$definition.storageClass.storageClassName}}
+  storageClassName: {{$definition.storageClassName}}
   
 {{- end }}
 

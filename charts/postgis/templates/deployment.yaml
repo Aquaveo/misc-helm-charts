@@ -85,4 +85,4 @@ spec:
       volumes:
         - name: postgis-persistent-storage
           persistentVolumeClaim:
-            claimName: postgis-pv-claim
+            claimName: {{ .Values.PersistentVolumeClaim.name }}

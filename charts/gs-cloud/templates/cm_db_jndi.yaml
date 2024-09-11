@@ -1,0 +1,22 @@
+{{- if .Values.jndi.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jndi.name }}
+  creationTimestamp: null
+data:
+  jndi.yml: |+
+    jndi:
+      datasources:
+        {{ .Values.jndi.datasource.name }}:
+          enabled: {{ .Values.jndi.datasource.enabled }}
+          wait-for-it: {{ .Values.jndi.datasource.wait_for_it }}
+          wait-timeout: {{ .Values.jndi.datasource.wait_timeout }}
+          url: jdbc:postgresql://{{ include "postgresql.v1.primary.svc.headless" .Subcharts.postgresql }}:{{ .Values.postgresql.containerPorts.postgresql | default 5432 }}/{{ .Values.postgresql.global.postgresql.auth.database | default "postgres" }}
+          username: {{ .Values.postgresql.global.postgresql.auth.user | default "postgres" }}
+          password: {{ .Values.postgresql.global.postgresql.auth.password | default .Values.postgresql.global.postgresql.auth.postgresPassword }}
+          maximum-pool-size: {{ .Values.jndi.datasource.pool.max_size }}
+          minimum-idle: {{ .Values.jndi.datasource.pool.min_idle }}
+          connection-timeout: {{ .Values.jndi.datasource.pool.connection_timeout }}
+          idle-timeout: {{ .Values.jndi.datasource.pool.idle_timeout }}
+{{- end }}

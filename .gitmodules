@@ -1,0 +1,4 @@
+[submodule "helm-geoserver-cloud"]
+	path = gs-cloud/charts/helm-geoserver-cloud
+	url = https://github.com/Aquaveo/helm-geoserver-cloud.git
+	branch = patch_last_pod_version

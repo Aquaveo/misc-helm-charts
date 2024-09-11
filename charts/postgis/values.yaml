@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: postgis/postgis
-  tag: 11-2.5
+  tag: 12-3.4
   pullPolicy: IfNotPresent
 
 postgres_user: postgres
@@ -50,6 +50,9 @@ service:
 
 storageClass:
   storageClassName: ''
+
+PersistentVolumeClaim:
+  name: postgis-pv-claim
 
 resources:
   requests:

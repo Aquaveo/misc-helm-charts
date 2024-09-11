@@ -24,7 +24,10 @@ persistentVolumeClaim:
 service:
   type: ClusterIP
   port: 80
-
+  ports:
+    - name: main-node
+      port: 8080
+      targetPort: 8080
 env:
   - name: TDM_PW
     value: 'tdm_pass'

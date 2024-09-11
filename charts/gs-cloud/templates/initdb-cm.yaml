@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db
+data:
+  install-postgis.sh: |
+    #!/bin/bash
+    set -e
+    echo "Creating PostGIS extension..."
+    PGPASSWORD={{ .Values.postgresql.global.postgresql.auth.postgresPassword }} \
+    psql -U {{ .Values.postgresql.global.postgresql.auth.user | default "postgres" }} \
+    -d {{ .Values.postgresql.global.postgresql.auth.database | default "postgres" }} \
+    -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+{{- if .Values.jndi.enabled }}
+  create_schemas.sql: |
+    \c {{ .Values.postgresql.global.postgresql.auth.database | default "postgres" }}
+    CREATE SCHEMA data;
+    CREATE SCHEMA config;
+{{- end }}

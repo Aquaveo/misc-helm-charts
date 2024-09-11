@@ -1,0 +1,144 @@
+
+acl:
+  enabled: false
+
+jndi:
+  enabled: true
+  name: gs-cloud-cm-jndi-geodata
+  datasource:
+    name: gs-cloud-cm-jndi-geodata
+    enabled: true
+    wait_for_it: true
+    wait_timeout: 10
+    pool:
+      max_size: 10
+      min_idle: 2
+      connection_timeout: 250
+      idle_timeout: 60000
+
+
+resources: &common-resources
+  requests:
+    memory: 512Mi
+    cpu: 0.1
+  limits:
+    memory: 4Gi
+    cpu: 4.0
+
+
+additionalVolumes: &additional-volumes
+  datadir:
+    persistentVolumeClaim:
+      claimName: gs-cloud-datadir-nfs-claim
+  cache:
+    persistentVolumeClaim:
+      claimName: gs-cloud-gwc-cache-nfs-claim      
+  geodata:
+    configMap:
+      name: gs-cloud-cm-jndi-geodata
+
+additionalVolumeMounts: &additional-volume-mounts
+  /opt/app/data_directory:
+    name: 'datadir'
+  /mnt/cache:
+    name: 'cache'
+  /custom/geodata:
+    name: 'geodata'
+
+env: &env-override
+  SPRING_PROFILES_ACTIVE:
+    value: standalone,datadir
+  JAVA_OPTS:
+    value: '$(JAVA_OPTS_DEFAULT) -Dspring.config.additional-location=optional:file:/custom/geodata/jndi.yml'
+    order: 1
+  JAVA_OPTS_DEFAULT:
+    value: '-DALLOW_ENV_PARAMETRIZATION=true -XX:MaxRAMPercentage=80 -XX:InitialRAMPercentage=80'
+  RABBITMQ_HOST:
+    value: 'gs-cloud-rabbitmq'
+  RABBITMQ_USER:
+    value: 'geoserver'
+  #This secrets gets created by the RABBITMQ chart
+  RABBITMQ_PASSWORD:
+    type: secret
+    name: 'gs-cloud-rabbitmq'
+    key: 'rabbitmq-password'
+  GEOWEBCACHE_CACHE_DIR:
+    value: '/mnt/cache'
+
+additional-stuff: &additional-stuff
+  volumes:
+    <<: *additional-volumes
+  containers:
+    spring:
+      resources:
+        <<: *common-resources
+      env:
+        <<: *env-override
+      volumeMounts:
+        <<: *additional-volume-mounts
+
+
+service: &common-service-definition
+  type: ClusterIP
+  servicePort: 8080
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+
+geoservercloud:
+  global:
+    # profile: standalone,datadir
+    profile: standalone,pgconfig,acl
+  geoserver:
+    ingress:
+      annotations: {}
+      enabled: true
+      hostGroups:
+        host1:
+          tls:
+            enabled: false
+          hosts:
+            - localhost
+    services:
+      gateway:
+        <<: *additional-stuff
+        service:
+          annotations: {}
+          labels: {}
+          <<: *common-service-definition
+        ingress:
+          enabled: true
+      webui:
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition
+
+      rest:
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition
+
+      wms:
+        replicaCount: 1
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition
+
+      wcs:
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition
+
+      wfs:
+        replicaCount: 1
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition
+
+      gwc:
+        replicaCount: 1
+        <<: *additional-stuff
+        service:
+          <<: *common-service-definition

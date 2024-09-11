@@ -4,4 +4,4 @@ description: 'The THREDDS Data Server (TDS) provides catalog, metadata, and data
 icon: https://camo.githubusercontent.com/317090970757210…32f746872656464735f7464732d313530783135302e706e67
 name: thredds
 type: application
-version: 0.2.3
+version: 0.2.4

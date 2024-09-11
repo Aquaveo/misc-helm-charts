@@ -7,9 +7,12 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - name: main-node
-      port: 8080
-      targetPort: 8080
+  {{- range $port := .Values.service.ports }}
+    - name: {{ $port.name }}
+      port: {{ $port.port }}
+      targetPort: {{ $port.targetPort }}
+  {{- end }}
+
   selector:
     app.kubernetes.io/name: {{ include "thredds.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
