@@ -1,7 +1,7 @@
 apiVersion: 'v2'
 appVersion: '12-3.4'
 description: 'PostgreSQL 12 database with PostGIS 3.4 installed.'
-icon: https://postgis.net/logos/postgis-logo-small.png
+icon: https://postgis.net/brand.svg
 name: 'postgis'
 type: 'application'
 version: 0.2.3
