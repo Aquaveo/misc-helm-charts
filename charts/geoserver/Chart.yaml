@@ -1,6 +1,6 @@
 apiVersion: 'v2'
 appVersion: '2.8.2'
-description: 'GeoServer is an open source server for sharing geospatial data.'
+description: 'Helm chart for GeoServer which is an open source server for sharing geospatial data.'
 icon: https://geoserver.org/img/geoserver-logo.png
 name: 'geoserver'
 type: 'application'

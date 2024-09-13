@@ -1,7 +1,7 @@
 apiVersion: v2
 appVersion: '1.16.0'
-description: 'The THREDDS Data Server (TDS) provides catalog, metadata, and data access services for scientific data. Every TDS publishes THREDDS catalogs that advertise the datasets and services it makes available. THREDDS catalogs are XML documents that list datasets and the data access services available for the datasets'
-icon: https://camo.githubusercontent.com/317090970757210…32f746872656464735f7464732d313530783135302e706e67
+description: 'Helm chart for the THREDDS Data Server (TDS) provides catalog, metadata, and data access services for scientific data. Every TDS publishes THREDDS catalogs that advertise the datasets and services it makes available. THREDDS catalogs are XML documents that list datasets and the data access services available for the datasets'
+icon: https://postgis.net/brand.svg
 name: thredds
 type: application
 version: 0.2.4
