@@ -4,4 +4,4 @@ description: 'PostgreSQL 12 database with PostGIS 3.4 installed.'
 icon: https://postgis.net/brand.svg
 name: 'postgis'
 type: 'application'
-version: 0.2.3
+version: 0.2.4

@@ -39,6 +39,8 @@ spec:
             - name: postgis
               containerPort: 5432
               hostPort: {{ .Values.service.port | int }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: postgis-persistent-storage
               mountPath: '/var/lib/postgresql/data'
