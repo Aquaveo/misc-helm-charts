@@ -241,30 +241,24 @@ env: &env-override
 #     port: health
 #   periodSeconds: 5
 
-# This is used, so the geoserver services can wait for the postgresql to start
-# additional_init_containers: &additional-init-containers
-#   waitpostgresdb:
-#     image:
-#       repository: postgis/postgis
-#       tag: latest
-#     env:
-#       PGHOST:
-#         value: gs-cloud-psql
-#       PGUSER:
-#         value: username
-#       PGPASSWORD:
-#         value: password
-#       PGDATABASE:
-#         value: ogscloud
-#     command:
-#       - /bin/sh
-#       - -c
-#       - |
-#         while ! psql -c 'select 1' > /dev/null 2>&1; do
-#           echo "waiting for postgresql database to be ready"
-#           sleep 1
-#         done
-#         echo "postgresql database is ready!"
+
+horizontal-pod-autoscaler: &horizontal-pod-autoscaler
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 16
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 
 additional-stuff: &additional-stuff
   volumes:
@@ -281,6 +275,8 @@ additional-stuff: &additional-stuff
       #   <<: *liveness-probeness
       # readinessProbe:
       #   <<: *readiness-probeness
+  hpa:
+    <<: *horizontal-pod-autoscaler
 
 service: &common-service-definition
   type: ClusterIP
@@ -403,3 +399,33 @@ geoservercloud:
                 type: secret
                 name: 'gs-cloud-pgconfig-acl-acl-config'
                 key: 'acl-users-geoserver-password'
+
+
+
+
+
+# This is used, so the geoserver services can wait for the postgresql to start
+# additional_init_containers: &additional-init-containers
+#   waitpostgresdb:
+#     image:
+#       repository: postgis/postgis
+#       tag: latest
+#     env:
+#       PGHOST:
+#         value: gs-cloud-psql
+#       PGUSER:
+#         value: username
+#       PGPASSWORD:
+#         value: password
+#       PGDATABASE:
+#         value: ogscloud
+#     command:
+#       - /bin/sh
+#       - -c
+#       - |
+#         while ! psql -c 'select 1' > /dev/null 2>&1; do
+#           echo "waiting for postgresql database to be ready"
+#           sleep 1
+#         done
+#         echo "postgresql database is ready!"
+
