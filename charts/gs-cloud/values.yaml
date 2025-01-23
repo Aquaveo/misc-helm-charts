@@ -1,6 +1,20 @@
-# The default values run the pgconfig backend with ACL rules, please refer to the data
+jndi:
+  enabled: false
+  name: gs-cloud-cm-jndi-geodata
+  datasource:
+    name: gs-cloud-cm-jndi-geodata
+    enabled: true
+    wait_for_it: true
+    wait_timeout: 10
+    pool:
+      max_size: 10
+      min_idle: 2
+      connection_timeout: 250
+      idle_timeout: 60000
+
 acl:
-  enabled: true
+# The default values run the pgconfig backend with ACL rules, please refer to the data
+  enabled: false
   secrets:
     acl_username: Z2Vvc2VydmVy # geoserver
     acl_password: czNjcjN0 # s3cr3t
@@ -25,6 +39,7 @@ persistentvalues: &pv-pvc-common-values
   persistentVolumeReclaimPolicy: 'Retain'
 
 persistent:
+  enabled: true
   raster:
     pvname: gs-cloud-raster-nfs
     pvcname: gs-cloud-raster-nfs-claim
@@ -36,16 +51,6 @@ persistent:
       - *pv-pvc-common-values
       - *storage-class-common-values
 
-  config:
-    pvname: gs-cloud-datadir-nfs
-    pvcname: gs-cloud-datadir-nfs-claim
-    mountOptions: 'nfsvers=4.2'
-    pvcreation: false  #When false, the pvc will create the pv, but if you enable it, then the pv will be created manually using the pv.yaml
-    path: ''
-    nfsserver: '' #This is a nfs server
-    <<: 
-      - *pv-pvc-common-values
-      - *storage-class-common-values
   cache:
     pvname: gs-cloud-gwc-cache-nfs
     pvcname: gs-cloud-gwc-cache-nfs-claim
@@ -56,36 +61,6 @@ persistent:
     <<: 
       - *pv-pvc-common-values
       - *storage-class-common-values
-
-
-# using default values, if you change any value please also change it on the @postgresql subcahrt
-# postgres_db_values: &postgres-db-values
-#   database: postgres
-#   username: postgres
-#   password: g30s3rv3r
-
-
-jndi:
-  enabled: false
-  name: gs-cloud-cm-jndi-geodata
-  datasource:
-    name: gs-cloud-cm-jndi-geodata
-    enabled: true
-    # host: gs-cloud-psql-hl
-    wait_for_it: true
-    wait_timeout: 10
-    # port: 5432
-    # <<: *postgres-db-values
-    pool:
-      max_size: 10
-      min_idle: 2
-      connection_timeout: 250
-      idle_timeout: 60000
-
-
-# postgresql_init:
-#   name: init-pqsl-db
-#   <<: *postgres-db-values
 
 postgresql:
   enabled: true
@@ -136,58 +111,38 @@ rabbitmq:
 
 resources: &common-resources
   requests:
-    memory: 512Mi
+    memory: 2Gi
     cpu: 0.1
   limits:
-    memory: 4Gi
-    cpu: 4.0
+    memory: 2Gi
+    cpu: 2.0
 
 additionalVolumes: &additional-volumes
-  datadir:
-    persistentVolumeClaim:
-      claimName: gs-cloud-datadir-nfs-claim
   cache:
-    persistentVolumeClaim:
-      claimName: gs-cloud-gwc-cache-nfs-claim
-  # # configmap for pgconfig JNDI configuration
-  # geoserver-pgconfig-config:
-  #   configMap:
-  #     name: geoserver-pgconfig-cm
-      
-  # geodata:
-  #   configMap:
-  #     name: gs-cloud-cm-jndi-geodata
+    emptyDir: {}
+    # persistentVolumeClaim:
+    #   claimName: gs-cloud-gwc-cache-nfs-claim
 
 additionalVolumeMounts: &additional-volume-mounts
-  /opt/app/data_directory:
-    name: 'datadir'
   /mnt/cache:
     name: 'cache'
-  # /custom/geodata:
-  #   name: 'geodata'
-  #   readOnly: true
-
-  # /etc/gscloud-custom:
-  #   name: 'geoserver-pgconfig-config'
-
+  
 env: &env-override
   PG_PASSWORD:
     type: secret
     name: 'gs-cloud-psql'
     key: 'postgres-password'
   SPRING_PROFILES_ACTIVE:
-    value: standalone,pgconfig,acl
-  # SPRING_CONFIG_ADDITIONAL_LOCATION:
-  #   value: 'optional:file:/etc/gscloud-custom/pgconfig-jndi.yml'    
+    value: standalone,pgconfig
   JAVA_OPTS:
     value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
   ACL_USERNAME:
     type: secret
-    name: 'gs-cloud-pgconfig-acl-acl-config'
+    name: 'gs-cloud-psql-acl-acl-config'
     key: 'acl-username'
   ACL_PASSWORD:
     type: secret
-    name: 'gs-cloud-pgconfig-acl-acl-config'
+    name: 'gs-cloud-psql-acl-acl-config'
     key: 'acl-password'
   PGCONFIG_HOST:
     value: gs-cloud-psql-hl
@@ -217,35 +172,10 @@ env: &env-override
   GEOWEBCACHE_CACHE_DIR:
     value: '/mnt/cache'
 
-
-
-  # JAVA_OPTS_DEFAULT:
-  #   value: '-DALLOW_ENV_PARAMETRIZATION=true -XX:MaxRAMPercentage=80 -XX:InitialRAMPercentage=80'
-  # JAVA_OPTS:
-  #   value: '$(JAVA_OPTS_DEFAULT) -Dspring.config.additional-location=optional:file:/custom/geodata/jndi.yml'
-  #   order: 1
-  # SPRING_PROFILES_ACTIVE:
-  #   value: standalone,datadir
-
-# live_probeness: &liveness-probeness
-#   failureThreshold: 10
-#   httpGet:
-#     path: /actuator/health/liveness
-#     port: health
-#   initialDelaySeconds: 30
-#   periodSeconds: 10
-
-# readiness_probeness: &readiness-probeness
-#   httpGet:
-#     path: /actuator/health/readiness
-#     port: health
-#   periodSeconds: 5
-
-
 horizontal-pod-autoscaler: &horizontal-pod-autoscaler
   enabled: true
   minReplicas: 1
-  maxReplicas: 16
+  maxReplicas: 18
   metrics:
     - type: Resource
       resource:
@@ -258,9 +188,23 @@ horizontal-pod-autoscaler: &horizontal-pod-autoscaler
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80
+          averageUtilization: 70
 
-additional-stuff: &additional-stuff
+live_probeness: &liveness-probeness
+  failureThreshold: 10
+  httpGet:
+    path: /actuator/health/liveness
+    port: health
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readiness_probeness: &readiness-probeness
+  httpGet:
+    path: /actuator/health/readiness
+    port: health
+  periodSeconds: 5
+
+additional-configuration: &additional-configuration
   volumes:
     <<: *additional-volumes
   containers:
@@ -271,90 +215,67 @@ additional-stuff: &additional-stuff
         <<: *env-override
       volumeMounts:
         <<: *additional-volume-mounts
-      # livenessProbe:
-      #   <<: *liveness-probeness
-      # readinessProbe:
-      #   <<: *readiness-probeness
-  hpa:
-    <<: *horizontal-pod-autoscaler
-
-service: &common-service-definition
-  type: ClusterIP
-  servicePort: 8080
-  ports:
-    - name: http
-      port: 8080
-      protocol: TCP
-      targetPort: http
+      livenessProbe:
+        <<: *liveness-probeness
+      readinessProbe:
+        <<: *readiness-probeness
 
 geoservercloud:
   global:
-    # profile: standalone,datadir
-    profile: standalone,pgconfig,acl
+    profile: standalone,pgconfig
+    image:
+      pullPolicy: IfNotPresent    
   geoserver:
     ingress:
-      annotations: {}
       enabled: true
+      annotations: {}
       hostGroups:
         host1:
           tls:
             enabled: false
           hosts:
-            - localhost
+            - gscloud.local
     services:
       gateway:
-        <<: *additional-stuff
+        replicaCount: 1
+        <<: *additional-configuration
         service:
           annotations: {}
           labels: {}
-          <<: *common-service-definition
         ingress:
           enabled: true
       webui:
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        replicaCount: 1
+        <<: *additional-configuration
+
       rest:
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        replicaCount: 1
+        <<: *additional-configuration
+
       wms:
         replicaCount: 1
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        <<: *additional-configuration
+        hpa:
+          <<: *horizontal-pod-autoscaler
+
       wcs:
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        <<: *additional-configuration
+
       wfs:
         replicaCount: 1
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        <<: *additional-configuration
+
       gwc:
         replicaCount: 1
-        <<: *additional-stuff
-        service:
-          <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+        <<: *additional-configuration
+
+      wps:
+        replicaCount: 1
+        <<: *additional-configuration
 
       acl:
         enabled: true
         replicaCount: 1
-        service:
-          <<: *common-service-definition
         containers:
           spring:
             env:
@@ -377,11 +298,11 @@ geoservercloud:
               # (or share single existing secret)
               PG_USERNAME:
                 type: secret
-                name: 'gs-cloud-pgconfig-acl-acl-config'
+                name: 'gs-cloud-psql-acl-acl-config'
                 key: 'acl-db-username'
               PG_PASSWORD:
                 type: secret
-                name: 'gs-cloud-pgconfig-acl-acl-config'
+                name: 'gs-cloud-psql-acl-acl-config'
                 key: 'acl-db-password'
               PG_HOST:
                 value: 'gs-cloud-psql-hl'
@@ -393,39 +314,71 @@ geoservercloud:
                 value: 'acl'
               ACL_USERS_ADMIN_PASSWORD:
                 type: secret
-                name: 'gs-cloud-pgconfig-acl-acl-config'
+                name: 'gs-cloud-psql-acl-acl-config'
                 key: 'acl-users-admin-password'
               ACL_USERS_GEOSERVER_PASSWORD:
                 type: secret
-                name: 'gs-cloud-pgconfig-acl-acl-config'
+                name: 'gs-cloud-psql-acl-acl-config'
                 key: 'acl-users-geoserver-password'
 
 
+pgcat:
+  enabled: true
 
+  replicaCount: 1
+  # Example: If your chart sets up RBAC
+  serviceAccount:
+    create: false
 
+  configuration:
+    general:
+      host: "0.0.0.0"
+      port: 6432
+      enable_prometheus_exporter: false
+      prometheus_exporter_port: 9930
 
-# This is used, so the geoserver services can wait for the postgresql to start
-# additional_init_containers: &additional-init-containers
-#   waitpostgresdb:
-#     image:
-#       repository: postgis/postgis
-#       tag: latest
-#     env:
-#       PGHOST:
-#         value: gs-cloud-psql
-#       PGUSER:
-#         value: username
-#       PGPASSWORD:
-#         value: password
-#       PGDATABASE:
-#         value: ogscloud
-#     command:
-#       - /bin/sh
-#       - -c
-#       - |
-#         while ! psql -c 'select 1' > /dev/null 2>&1; do
-#           echo "waiting for postgresql database to be ready"
-#           sleep 1
-#         done
-#         echo "postgresql database is ready!"
+      # A minimal set of recommended timeouts
+      connect_timeout: 5000
+      idle_timeout: 30000
+      healthcheck_timeout: 1000
+      healthcheck_delay: 30000
+      shutdown_timeout: 60000
 
+      # This admin_username/password is needed for the virtual "pgcat" or "pgbouncer" admin database
+      admin_username: "postgres"
+      admin_password: "postgres"
+
+    pools:
+      # 1) For the ACL database
+      # - name: "acl"
+      #   pool_mode: "transaction"
+      #   users:
+      #     - username:
+      #         type: secret
+      #         name: 'gs-cloud-psql-acl-acl-config'
+      #         key: 'acl-db-username'
+      #       password:
+      #         type: secret
+      #         name: 'gs-cloud-psql-acl-acl-config'
+      #         key: 'acl-db-password'
+      #       pool_size: 20
+      #   shards:
+      #     - servers:
+      #         - host: gs-cloud-psql-hl
+      #           port: 5432
+      #           role: primary
+      #       database: "acl"
+
+      # 2) For the pgconfig database
+      - name: "pgconfig"
+        pool_mode: "transaction"
+        users:
+          - username: "postgres"
+            password: "g30s3rv3r"
+            pool_size: 20
+        shards:
+          - servers:
+              - host: gs-cloud-psql-hl
+                port: 5432
+                role: primary
+            database: "postgres"

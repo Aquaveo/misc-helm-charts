@@ -16,3 +16,8 @@ dependencies:
   - name: geoservercloud
     repository: https://camptocamp.github.io/helm-geoserver-cloud
     version: '*'
+
+  - name: pgcat
+    repository: "https://postgresml.github.io/pgcat"
+    version: "0.2.5"
+    condition: pgcat.enabled
