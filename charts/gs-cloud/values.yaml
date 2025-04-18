@@ -12,6 +12,7 @@ jndi:
       connection_timeout: 250
       idle_timeout: 60000
 
+# if you watn to use acl please set enabled to true on the acl section
 acl:
 # The default values run the pgconfig backend with ACL rules, please refer to the data
   enabled: false
@@ -63,7 +64,7 @@ persistent:
       - *storage-class-common-values
 
 postgresql:
-  enabled: true
+  enabled: false
   image:
     debug: true
   global:
@@ -128,38 +129,6 @@ additionalVolumeMounts: &additional-volume-mounts
     name: 'cache'
   
 env: &env-override
-  PG_PASSWORD:
-    type: secret
-    name: 'gs-cloud-psql'
-    key: 'postgres-password'
-  SPRING_PROFILES_ACTIVE:
-    value: standalone,pgconfig
-  JAVA_OPTS:
-    value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
-  ACL_USERNAME:
-    type: secret
-    name: 'gs-cloud-psql-acl-acl-config'
-    key: 'acl-username'
-  ACL_PASSWORD:
-    type: secret
-    name: 'gs-cloud-psql-acl-acl-config'
-    key: 'acl-password'
-  PGCONFIG_HOST:
-    value: gs-cloud-psql-hl
-  PGCONFIG_PORT:
-    value: '5432'
-  PGCONFIG_DATABASE:
-    value: postgres
-  PGCONFIG_SCHEMA:
-    value: pgconfig
-  PGCONFIG_USERNAME:
-    value: postgres
-  PGCONFIG_PASSWORD:
-    type: secret
-    name: 'gs-cloud-psql'
-    key: 'postgres-password'
-  PGCONFIG_MAXCONNECTIONS:
-    value: '10'
   RABBITMQ_HOST:
     value: 'gs-cloud-rabbitmq'
   RABBITMQ_USER:
@@ -171,11 +140,54 @@ env: &env-override
     key: 'rabbitmq-password'
   GEOWEBCACHE_CACHE_DIR:
     value: '/mnt/cache'
+  SPRING_PROFILES_ACTIVE:
+    value: standalone,pgconfig
+  JAVA_OPTS:
+    value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
+
+  GEOSERVER_ADMIN_USERNAME:
+    value: admin
+  GEOSERVER_ADMIN_PASSWORD:
+    value: geoserver
+  GEOSERVER_BASE_PATH:
+    value: /geoserver
+
+    
+  # ACL_USERNAME:
+  #   type: secret
+  #   name: 'gs-cloud-psql-acl-acl-config'
+  #   key: 'acl-username'
+  # ACL_PASSWORD:
+  #   type: secret
+  #   name: 'gs-cloud-psql-acl-acl-config'
+  #   key: 'acl-password'
+
+  # # Uncomment if you want to use pgconfig backend
+  # PG_PASSWORD:
+  #   type: secret
+  #   name: 'gs-cloud-psql'
+  #   key: 'postgres-password'  
+  # PGCONFIG_HOST:
+  #   value: gs-cloud-psql-hl
+  # PGCONFIG_PORT:
+  #   value: '5432'
+  # PGCONFIG_DATABASE:
+  #   value: postgres
+  # PGCONFIG_SCHEMA:
+  #   value: pgconfig
+  # PGCONFIG_USERNAME:
+  #   value: postgres
+  # PGCONFIG_PASSWORD:
+  #   type: secret
+  #   name: 'gs-cloud-psql'
+  #   key: 'postgres-password'
+  # PGCONFIG_MAXCONNECTIONS:
+  #   value: '10'
 
 horizontal-pod-autoscaler: &horizontal-pod-autoscaler
   enabled: true
   minReplicas: 1
-  maxReplicas: 18
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -222,7 +234,8 @@ additional-configuration: &additional-configuration
 
 geoservercloud:
   global:
-    profile: standalone,pgconfig
+    # profile: standalone,pgconfig
+    profile: standalone,datadir
     image:
       pullPolicy: IfNotPresent    
   geoserver:
@@ -260,11 +273,13 @@ geoservercloud:
 
       wcs:
         <<: *additional-configuration
-
+        hpa:
+          <<: *horizontal-pod-autoscaler
       wfs:
         replicaCount: 1
         <<: *additional-configuration
-
+        hpa:
+          <<: *horizontal-pod-autoscaler
       gwc:
         replicaCount: 1
         <<: *additional-configuration
@@ -272,58 +287,58 @@ geoservercloud:
       wps:
         replicaCount: 1
         <<: *additional-configuration
-
-      acl:
-        enabled: true
-        replicaCount: 1
-        containers:
-          spring:
-            env:
-              SPRING_PROFILES_ACTIVE:
-                value: standalone,pgconfig,acl
-              GEOSERVER_BUS_ENABLED:
-                value: 'true'
-              RABBITMQ_HOST:
-                value: 'gs-cloud-rabbitmq'
-              RABBITMQ_PORT:
-                value: '5672'
-              RABBITMQ_USER:
-                value: 'geoserver'
-              RABBITMQ_PASSWORD:
-                type: secret
-                name: 'gs-cloud-rabbitmq'
-                key: 'rabbitmq-password'
-              # these username and password should
-              # match those defined for postgres chart
-              # (or share single existing secret)
-              PG_USERNAME:
-                type: secret
-                name: 'gs-cloud-psql-acl-acl-config'
-                key: 'acl-db-username'
-              PG_PASSWORD:
-                type: secret
-                name: 'gs-cloud-psql-acl-acl-config'
-                key: 'acl-db-password'
-              PG_HOST:
-                value: 'gs-cloud-psql-hl'
-              PG_PORT:
-                value: '5432'
-              PG_DB:
-                value: 'postgres'
-              PG_SCHEMA:
-                value: 'acl'
-              ACL_USERS_ADMIN_PASSWORD:
-                type: secret
-                name: 'gs-cloud-psql-acl-acl-config'
-                key: 'acl-users-admin-password'
-              ACL_USERS_GEOSERVER_PASSWORD:
-                type: secret
-                name: 'gs-cloud-psql-acl-acl-config'
-                key: 'acl-users-geoserver-password'
+      # # if acl needs to be used uncomment the acl section
+      # acl:
+      #   enabled: true
+      #   replicaCount: 1
+      #   containers:
+      #     spring:
+      #       env:
+      #         SPRING_PROFILES_ACTIVE:
+      #           value: standalone,pgconfig,acl
+      #         GEOSERVER_BUS_ENABLED:
+      #           value: 'true'
+      #         RABBITMQ_HOST:
+      #           value: 'gs-cloud-rabbitmq'
+      #         RABBITMQ_PORT:
+      #           value: '5672'
+      #         RABBITMQ_USER:
+      #           value: 'geoserver'
+      #         RABBITMQ_PASSWORD:
+      #           type: secret
+      #           name: 'gs-cloud-rabbitmq'
+      #           key: 'rabbitmq-password'
+      #         # these username and password should
+      #         # match those defined for postgres chart
+      #         # (or share single existing secret)
+      #         PG_USERNAME:
+      #           type: secret
+      #           name: 'gs-cloud-psql-acl-acl-config'
+      #           key: 'acl-db-username'
+      #         PG_PASSWORD:
+      #           type: secret
+      #           name: 'gs-cloud-psql-acl-acl-config'
+      #           key: 'acl-db-password'
+      #         PG_HOST:
+      #           value: 'gs-cloud-psql-hl'
+      #         PG_PORT:
+      #           value: '5432'
+      #         PG_DB:
+      #           value: 'postgres'
+      #         PG_SCHEMA:
+      #           value: 'acl'
+      #         ACL_USERS_ADMIN_PASSWORD:
+      #           type: secret
+      #           name: 'gs-cloud-psql-acl-acl-config'
+      #           key: 'acl-users-admin-password'
+      #         ACL_USERS_GEOSERVER_PASSWORD:
+      #           type: secret
+      #           name: 'gs-cloud-psql-acl-acl-config'
+      #           key: 'acl-users-geoserver-password'
 
 
 pgcat:
-  enabled: true
+  enabled: false # by default pgcat is disabled, because we need to sue pgconfig as the backend
 
   replicaCount: 1
   # Example: If your chart sets up RBAC
@@ -349,6 +364,7 @@ pgcat:
       admin_password: "postgres"
 
     pools:
+      # # SHOULD THE ACL ALSO USE THE PGCAT? 
       # 1) For the ACL database
       # - name: "acl"
       #   pool_mode: "transaction"
@@ -369,6 +385,7 @@ pgcat:
       #           role: primary
       #       database: "acl"
 
+      # #  THIS NEEDS TO BE  UNCOMENTED IF PGCONFIG USED.
       # 2) For the pgconfig database
       - name: "pgconfig"
         pool_mode: "transaction"
