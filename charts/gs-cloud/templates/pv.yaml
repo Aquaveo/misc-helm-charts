@@ -1,8 +1,6 @@
-{{- if (eq .Values.persistent.enabled true) }}
 {{- range $key, $definition := .Values.persistent }}
 ---
 {{- if and $definition.pvcreation }}
-# PV {{ print $key }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -22,5 +20,5 @@ spec:
   storageClassName: {{$definition.storageClassName}}
   
 {{- end }}
-{{- end }}
+
 {{- end }}

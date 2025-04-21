@@ -49,7 +49,8 @@ env: &env-override
   SPRING_PROFILES_ACTIVE:
     value: standalone,datadir
   JAVA_OPTS:
-    value: '$(JAVA_OPTS_DEFAULT) -Dspring.config.additional-location=optional:file:/custom/geodata/jndi.yml'
+    # value: '$(JAVA_OPTS_DEFAULT) -Dspring.config.additional-location=optional:file:/custom/geodata/jndi.yml'
+    value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
     order: 1
   JAVA_OPTS_DEFAULT:
     value: '-DALLOW_ENV_PARAMETRIZATION=true -XX:MaxRAMPercentage=80 -XX:InitialRAMPercentage=80'
@@ -142,3 +143,6 @@ geoservercloud:
         <<: *additional-stuff
         service:
           <<: *common-service-definition
+
+pgcat:
+  enabled: false

@@ -1,3 +1,4 @@
+{{- if (eq .Values.postgresql.enabled true) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,4 +17,5 @@ data:
     \c {{ .Values.postgresql.global.postgresql.auth.database | default "postgres" }}
     CREATE SCHEMA data;
     CREATE SCHEMA config;
+{{- end }}
 {{- end }}
