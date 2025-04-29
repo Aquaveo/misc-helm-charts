@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GEOSERVER_URL="http://gscloud.local/geoserver-cloud"
+GEOSERVER_URL="http://localhost:8080/geoserver-cloud"
 USER="admin"
 PASSWORD="geoserver"
 
