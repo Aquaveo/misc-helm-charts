@@ -43,17 +43,6 @@ persistentvalues: &pv-pvc-common-values
   persistentVolumeReclaimPolicy: 'Retain'
 
 persistent:
-  raster:
-    pvname: gs-cloud-raster-nfs
-    pvcname: gs-cloud-raster-nfs-claim
-    pvcreation: false #When false, the pvc will create the pv, but if you enable it, then the pv will be created manually using the pv.yaml
-    path: ''
-    mountOptions: 'nfsvers=4.2'
-    nfsserver: '' #This is a nfs server
-    <<: 
-      - *pv-pvc-common-values
-      - *storage-class-common-values
-
   config:
     pvname: gs-cloud-datadir-nfs
     pvcname: gs-cloud-datadir-nfs-claim
@@ -101,6 +90,7 @@ postgresql:
     postgresql: 5432
 
 rabbitmq:
+  fullnameOverride: gs-cloud-rabbitmq
   enabled: true
   resources:
     limits:
@@ -129,7 +119,6 @@ resources: &common-resources
     cpu: 0.1
   limits:
     memory: 2Gi
-    cpu: 2.0
 
 additionalVolumes: &additional-volumes
   datadir:
@@ -137,7 +126,7 @@ additionalVolumes: &additional-volumes
       claimName: gs-cloud-datadir-nfs-claim
   cache:
     persistentVolumeClaim:
-      claimName: gs-cloud-gwc-cache-nfs-claim      
+      claimName: gs-cloud-gwc-cache-nfs-claim   
 
 additionalVolumeMounts: &additional-volume-mounts
   /opt/app/data_directory:
@@ -245,6 +234,7 @@ geoservercloud:
         service:
           annotations: {}
           labels: {}
+          
         ingress:
           enabled: true
       webui:
