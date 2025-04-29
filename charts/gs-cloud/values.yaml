@@ -149,9 +149,10 @@ env: &env-override
     value: '/mnt/cache'
   SPRING_PROFILES_ACTIVE:
     value: standalone,datadir
+  JAVA_OPTS_DEFAULT:
+    value: '-DALLOW_ENV_PARAMETRIZATION=true -XX:MaxRAMPercentage=80 -XX:InitialRAMPercentage=80'    
   JAVA_OPTS:
     value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
-
   GEOSERVER_ADMIN_USERNAME:
     value: admin
   GEOSERVER_ADMIN_PASSWORD:
