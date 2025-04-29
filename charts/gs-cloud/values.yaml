@@ -212,6 +212,16 @@ additional-configuration: &additional-configuration
         <<: *common-image-stuff
         sha: ''        
 
+service: &common-service-definition
+  type: ClusterIP
+  servicePort: 8080
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+
+
 geoservercloud:
   global:
     profile: standalone,datadir
@@ -234,35 +244,52 @@ geoservercloud:
         service:
           annotations: {}
           labels: {}
+          <<: *common-service-definition
           
         ingress:
           enabled: true
       webui:
         replicaCount: 1
         <<: *additional-configuration
-
+        service:
+          <<: *common-service-definition
       rest:
         replicaCount: 1
         <<: *additional-configuration
-
+        hpa:
+          <<: *horizontal-pod-autoscaler        
+        service:
+          <<: *common-service-definition
       wms:
         replicaCount: 1
         <<: *additional-configuration
         hpa:
           <<: *horizontal-pod-autoscaler
+        service:
+          <<: *common-service-definition
 
       wcs:
         <<: *additional-configuration
         hpa:
           <<: *horizontal-pod-autoscaler
+        service:
+          <<: *common-service-definition
+
       wfs:
         replicaCount: 1
         <<: *additional-configuration
         hpa:
           <<: *horizontal-pod-autoscaler
+        service:
+          <<: *common-service-definition
+
       gwc:
         replicaCount: 1
         <<: *additional-configuration
+        service:
+          <<: *common-service-definition
+        hpa:
+          <<: *horizontal-pod-autoscaler          
 
       wps:
         replicaCount: 1
