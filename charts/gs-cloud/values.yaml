@@ -19,6 +19,7 @@ jndi:
 acl:
 # The default values run the pgconfig backend with ACL rules, please refer to the data
   enabled: false
+  secret_name: gs-cloud-acl-config
   secrets:
     acl_username: Z2Vvc2VydmVy # geoserver
     acl_password: czNjcjN0 # s3cr3t
