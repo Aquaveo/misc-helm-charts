@@ -148,7 +148,6 @@ env: &env-override
     value: '/mnt/cache'
   SPRING_PROFILES_ACTIVE:
     value: standalone,datadir
-    # value: standalone,pgconfig
   JAVA_OPTS:
     value: '$(JAVA_OPTS_DEFAULT) -XshowSettings:system'
 
@@ -213,7 +212,6 @@ additional-configuration: &additional-configuration
 
 geoservercloud:
   global:
-    # profile: standalone,pgconfig
     profile: standalone,datadir
     image:
       pullPolicy: IfNotPresent    
