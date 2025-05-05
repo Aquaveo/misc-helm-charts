@@ -17,7 +17,7 @@ dependencies:
 
   - name: geoservercloud
     repository: https://camptocamp.github.io/helm-geoserver-cloud
-    version: 2.3.4
+    version: 2.3.5
 
   - name: pgcat
     repository: "https://postgresml.github.io/pgcat"
