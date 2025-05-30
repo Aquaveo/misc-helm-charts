@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config-map
+  labels:
+{{ include "geoserver.labels" . | indent 4 }}
+data:
+  default: |
+    upstream backend {
+        least_conn;
+        
+        server localhost:8081;
+        
+        server localhost:8082;
+        
+        server localhost:8083;
+        
+        server localhost:8084;
+    
+    }
+
+    upstream rest {
+        least_conn;
+        
+        server localhost:8081;
+    
+    }
+
+    server {
+        listen 8181;
+
+        server_name localhost;
+        resolver localhost;
+
+        client_max_body_size 2G;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_read_timeout 1800s;
+        }
+
+        # Pass web and login requests to first node
+        location /geoserver/j_spring_security {
+            proxy_pass http://localhost:8081;
+            proxy_read_timeout 1800s;
+        }
+
+        location /geoserver/web/ {
+            proxy_pass http://localhost:8081;
+            proxy_read_timeout 1800s;
+        }
+
+        # Pass REST requests to the nodes enabled for REST
+        location /geoserver/rest/ {
+            proxy_pass http://rest;
+            proxy_read_timeout 1800s;
+        }
+
+        location /geoserver/gwc/rest/ {
+            proxy_pass http://rest;
+            proxy_read_timeout 1800s;
+        }
+    }    
