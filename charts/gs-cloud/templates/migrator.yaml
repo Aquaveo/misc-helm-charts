@@ -1,0 +1,40 @@
+{{/*
+  Extra volumes + init-container injected ONLY into the gateway Deployment.
+  This template is ignored when .Values.migrator.enabled == false.
+*/}}
+{{- if .Values.migrator.enabled }}
+apiVersion: apps/v1
+kind: Patch                                   # <-— strategic-merge patch
+metadata:
+  name: {{ index .Values "geoservercloud" "geoserver" "services" "gateway" "service" "name" }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+spec:
+  template:
+    spec:
+      volumes:
+        - name: olddatadir
+          persistentVolumeClaim:
+            claimName: {{ .Values.migrator.source.pvc.name }}
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: {{ .Values.migrator.conversor.pvc.name }}
+      initContainers:
+        - name: datadir-migrator
+          image: curlimages/curl:8.7
+          env:
+            - name: GS_USER
+              valueFrom:
+                secretKeyRef: { name: old-gs-credentials, key: username }
+            - name: GS_PASS
+              valueFrom:
+                secretKeyRef: { name: old-gs-credentials, key: password }
+          command: {{ include "migrator.init.command" . | nindent 12 }}
+          volumeMounts:
+            - name: olddatadir
+              mountPath: /source_data
+              readOnly: true
+            - name: datadir
+              mountPath: /target_data
+{{- end }}

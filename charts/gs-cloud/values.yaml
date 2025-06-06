@@ -1,3 +1,15 @@
+migrator:
+  enabled: false
+  source:
+    service: old-gs
+    namespace: default
+    port: 8181
+    pvc:
+      name: geoserver-persistent-storage
+  conversor:
+    pvc:
+      name: gs-cloud-datadir-nfs-claim
+
 # The default values run the pgconfig backend with ACL rules, please refer to the data
 acl:
   enabled: true
@@ -149,6 +161,7 @@ additionalVolumes: &additional-volumes
   cache:
     persistentVolumeClaim:
       claimName: gs-cloud-gwc-cache-nfs-claim
+
   # # configmap for pgconfig JNDI configuration
   # geoserver-pgconfig-config:
   #   configMap:
@@ -163,6 +176,8 @@ additionalVolumeMounts: &additional-volume-mounts
     name: 'datadir'
   /mnt/cache:
     name: 'cache'
+
+
   # /custom/geodata:
   #   name: 'geodata'
   #   readOnly: true
@@ -242,29 +257,30 @@ env: &env-override
 #   periodSeconds: 5
 
 # This is used, so the geoserver services can wait for the postgresql to start
-# additional_init_containers: &additional-init-containers
-#   waitpostgresdb:
-#     image:
-#       repository: postgis/postgis
-#       tag: latest
-#     env:
-#       PGHOST:
-#         value: gs-cloud-psql
-#       PGUSER:
-#         value: username
-#       PGPASSWORD:
-#         value: password
-#       PGDATABASE:
-#         value: ogscloud
-#     command:
-#       - /bin/sh
-#       - -c
-#       - |
-#         while ! psql -c 'select 1' > /dev/null 2>&1; do
-#           echo "waiting for postgresql database to be ready"
-#           sleep 1
-#         done
-#         echo "postgresql database is ready!"
+
+additional_init_containers: &additional-init-containers
+  waitpostgresdb:
+    image:
+      repository: postgis/postgis
+      tag: latest
+    env:
+      PGHOST:
+        value: gs-cloud-psql
+      PGUSER:
+        value: username
+      PGPASSWORD:
+        value: password
+      PGDATABASE:
+        value: ogscloud
+    command:
+      - /bin/sh
+      - -c
+      - |
+        while ! psql -c 'select 1' > /dev/null 2>&1; do
+          echo "waiting for postgresql database to be ready"
+          sleep 1
+        done
+        echo "postgresql database is ready!"
 
 additional-stuff: &additional-stuff
   volumes:
@@ -311,48 +327,40 @@ geoservercloud:
         service:
           annotations: {}
           labels: {}
-          <<: *common-service-definition
+          <<: *common-service-definition       
         ingress:
           enabled: true
       webui:
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+
       rest:
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+
       wms:
         replicaCount: 1
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+
       wcs:
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
+
       wfs:
         replicaCount: 1
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
       gwc:
         replicaCount: 1
         <<: *additional-stuff
         service:
           <<: *common-service-definition
-        # initContainers:
-        #   <<: *additional-init-containers
 
       acl:
         enabled: true
