@@ -1,0 +1,38 @@
+{{- if and .Values.dataDirectory.persistence.enabled (not .Values.dataDirectory.customDataDir.enabled) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "geoserver-official.fullname" . }}-data
+  labels:
+    {{- include "geoserver-official.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.dataDirectory.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.dataDirectory.persistence.size }}
+  {{- if .Values.dataDirectory.persistence.storageClass }}
+  storageClassName: {{ .Values.dataDirectory.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+---
+{{- range .Values.persistence.additionalVolumes }}
+{{- if not .existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "geoserver-official.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "geoserver-official.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .size }}
+  {{- if .storageClass }}
+  storageClassName: {{ .storageClass }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}

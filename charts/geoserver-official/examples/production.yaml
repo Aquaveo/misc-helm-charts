@@ -1,0 +1,126 @@
+# Production deployment example
+# Use this for production environments with security hardening
+
+replicaCount: 2
+
+image:
+  repository: docker.osgeo.org/geoserver
+  tag: "2.27.0"
+  pullPolicy: IfNotPresent
+
+admin:
+  # IMPORTANT: Change these credentials after deployment
+  user: admin
+  password: "change-this-secure-password"
+
+dataDirectory:
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "fast-ssd"
+    accessMode: ReadWriteOnce
+  # Skip demo data for production
+  skipDemoData: true
+
+webappContext: "geoserver"
+rootWebappRedirect: true
+
+jvm:
+  # Increase memory for production workloads
+  extraJavaOpts: "-Xms2g -Xmx6g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Install commonly used extensions
+extensions:
+  install: true
+  stable:
+  - "control-flow" # Rate limiting
+  - "monitor" # Performance monitoring
+  - "inspire" # INSPIRE compliance
+  - "css" # CSS styling
+  - "ysld" # YAML styling
+  - "printing" # Map printing
+
+# Enable CORS for web applications
+cors:
+  enabled: true
+  allowedOrigins: "https://myapp.example.com,https://admin.example.com"
+  allowCredentials: true
+
+# Security configuration
+security:
+  runUnprivileged: true
+  runWithUserUid: 999
+  runWithUserGid: 999
+
+# Resource limits for production
+resources:
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+
+# Enable autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Production ingress with TLS
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/client-max-body-size: "100m"
+  hosts:
+  - host: geoserver.example.com
+    paths:
+    - path: /
+      pathType: Prefix
+  tls:
+  - secretName: geoserver-tls
+    hosts:
+    - geoserver.example.com
+
+# Security context
+podSecurityContext:
+  fsGroup: 999
+  runAsNonRoot: true
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+    - ALL
+
+# Node selector for production nodes
+nodeSelector:
+  node-type: production
+
+# Anti-affinity to spread pods across nodes
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - geoserver-official
+        topologyKey: kubernetes.io/hostname
