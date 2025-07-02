@@ -227,8 +227,12 @@ spec:
         {{- if .Values.dataDirectory.persistence.enabled }}
         - name: geoserver-data
           persistentVolumeClaim:
-            {{- if .Values.dataDirectory.customDataDir.enabled }}
+            {{- if hasKey .Values.dataDirectory "customDataDir" }}
+              {{- if .Values.dataDirectory.customDataDir.enabled }}
             claimName: {{ .Values.dataDirectory.customDataDir.existingClaim }}
+              {{- else }}
+            claimName: {{ include "geoserver-official.fullname" . }}-data
+              {{- end }}
             {{- else }}
             claimName: {{ include "geoserver-official.fullname" . }}-data
             {{- end }}
