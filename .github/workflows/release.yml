@@ -66,3 +66,12 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/djangocms
+
+      - name: Run chart-releaser geoserver-official
+        uses: bitdeps/helm-oci-charts-releaser@v0.1.0
+        with:
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
+          oci_password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          charts_dir: charts/geoserver-official
