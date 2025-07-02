@@ -1,0 +1,57 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "geoserver-official.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT/{{ .Values.webappContext | default "geoserver" }}
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "geoserver-official.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "geoserver-official.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}/{{ .Values.webappContext | default "geoserver" }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "geoserver-official.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080/{{ .Values.webappContext | default "geoserver" }} to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+2. GeoServer Configuration:
+   - Default admin credentials: {{ .Values.admin.user | default "admin" }}/{{ .Values.admin.password | default "geoserver" }}
+   - **IMPORTANT**: Change the default admin password immediately after deployment!
+   - Data directory is persistent and located at: {{ include "geoserver-official.dataDir" . }}
+   
+3. Features enabled in this deployment:
+{{- if .Values.extensions.install }}
+   - Extension installation: enabled
+   {{- if .Values.extensions.stable }}
+   - Stable extensions: {{ join ", " .Values.extensions.stable }}
+   {{- end }}
+   {{- if .Values.extensions.community }}
+   - Community extensions: {{ join ", " .Values.extensions.community }}
+   {{- end }}
+{{- end }}
+{{- if .Values.cors.enabled }}
+   - CORS: enabled with origins: {{ .Values.cors.allowedOrigins }}
+{{- end }}
+{{- if .Values.postgres.jndi.enabled }}
+   - PostgreSQL JNDI: enabled
+{{- end }}
+{{- if .Values.https.enabled }}
+   - HTTPS: enabled
+{{- end }}
+{{- if .Values.dataDirectory.skipDemoData }}
+   - Demo data: skipped (production mode)
+{{- else }}
+   - Demo data: included
+{{- end }}
+
+4. Security notes:
+   - Container runs as non-root user (UID: {{ .Values.security.runWithUserUid }})
+   - Remove admin credentials from values after initial setup
+   - Consider enabling HTTPS for production deployments

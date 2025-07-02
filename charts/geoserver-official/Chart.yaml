@@ -1,0 +1,21 @@
+apiVersion: v2
+name: geoserver-official
+description: Official GeoServer Helm chart for the OSGeo GeoServer Docker image
+icon: https://geoserver.org/img/geoserver-logo.png
+type: application
+version: 0.1.0
+appVersion: "2.27.1"
+home: https://geoserver.org/
+sources:
+- https://github.com/geoserver/docker
+- https://github.com/geoserver/geoserver
+keywords:
+- geoserver
+- geospatial
+- gis
+- mapping
+- ogc
+- web-mapping
+maintainers:
+- name: GeoServer Community
+  url: https://geoserver.org/

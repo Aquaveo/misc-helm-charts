@@ -1,0 +1,299 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "geoserver-official.fullname" . }}
+  labels:
+    {{- include "geoserver-official.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "geoserver-official.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "geoserver-official.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "geoserver-official.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ include "geoserver-official.imageTag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            # GeoServer admin credentials (remove after initial setup)
+            {{- if .Values.admin.user }}
+            - name: GEOSERVER_ADMIN_USER
+              value: {{ .Values.admin.user | quote }}
+            {{- end }}
+            {{- if .Values.admin.password }}
+            - name: GEOSERVER_ADMIN_PASSWORD
+              value: {{ .Values.admin.password | quote }}
+            {{- end }}
+            
+            # Data directory configuration
+            - name: GEOSERVER_DATA_DIR
+              value: {{ include "geoserver-official.dataDir" . }}
+            {{- if .Values.dataDirectory.skipDemoData }}
+            - name: SKIP_DEMO_DATA
+              value: "true"
+            {{- end }}
+            
+            # Web application context
+            {{- if .Values.webappContext }}
+            - name: WEBAPP_CONTEXT
+              value: {{ .Values.webappContext | quote }}
+            {{- end }}
+            
+            # Root webapp redirect
+            {{- if .Values.rootWebappRedirect }}
+            - name: ROOT_WEBAPP_REDIRECT
+              value: "true"
+            {{- end }}
+            
+            # JVM configuration
+            {{- if .Values.jvm.extraJavaOpts }}
+            - name: EXTRA_JAVA_OPTS
+              value: {{ .Values.jvm.extraJavaOpts | quote }}
+            {{- end }}
+            
+            # Extensions configuration
+            {{- if .Values.extensions.install }}
+            - name: INSTALL_EXTENSIONS
+              value: "true"
+            {{- end }}
+            {{- if .Values.extensions.stable }}
+            - name: STABLE_EXTENSIONS
+              value: {{ join "," .Values.extensions.stable | quote }}
+            {{- end }}
+            {{- if .Values.extensions.community }}
+            - name: COMMUNITY_EXTENSIONS
+              value: {{ join "," .Values.extensions.community | quote }}
+            {{- end }}
+            
+            # CORS configuration
+            {{- if .Values.cors.enabled }}
+            - name: CORS_ENABLED
+              value: "true"
+            - name: CORS_ALLOWED_ORIGINS
+              value: {{ .Values.cors.allowedOrigins | quote }}
+            - name: CORS_ALLOWED_METHODS
+              value: {{ .Values.cors.allowedMethods | quote }}
+            - name: CORS_ALLOWED_HEADERS
+              value: {{ .Values.cors.allowedHeaders | quote }}
+            - name: CORS_ALLOW_CREDENTIALS
+              value: {{ .Values.cors.allowCredentials | quote }}
+            {{- end }}
+            
+            # PostgreSQL JNDI configuration
+            {{- if .Values.postgres.jndi.enabled }}
+            - name: POSTGRES_JNDI_ENABLED
+              value: "true"
+            - name: POSTGRES_HOST
+              value: {{ .Values.postgres.jndi.host | quote }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.postgres.jndi.port | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.jndi.database | quote }}
+            - name: POSTGRES_USERNAME
+              value: {{ .Values.postgres.jndi.username | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgres.jndi.password | quote }}
+            - name: POSTGRES_JNDI_RESOURCE_NAME
+              value: {{ .Values.postgres.jndi.resourceName | quote }}
+            {{- end }}
+            
+            # HTTPS configuration
+            {{- if .Values.https.enabled }}
+            - name: HTTPS_ENABLED
+              value: "true"
+            - name: HTTPS_KEYSTORE_FILE
+              value: {{ .Values.https.keystoreFile | quote }}
+            - name: HTTPS_KEYSTORE_PASSWORD
+              value: {{ .Values.https.keystorePassword | quote }}
+            - name: HTTPS_KEY_ALIAS
+              value: {{ .Values.https.keyAlias | quote }}
+            {{- end }}
+            
+            # Proxy configuration
+            {{- if .Values.proxyBaseUrl }}
+            - name: PROXY_BASE_URL
+              value: {{ .Values.proxyBaseUrl | quote }}
+            {{- end }}
+            
+            # Health check configuration
+            {{- if .Values.healthCheck.url }}
+            - name: HEALTHCHECK_URL
+              value: {{ .Values.healthCheck.url | quote }}
+            {{- end }}
+            
+            # Security configuration
+            {{- if .Values.security.runUnprivileged }}
+            - name: RUN_UNPRIVILEGED
+              value: "true"
+            - name: RUN_WITH_USER_UID
+              value: {{ .Values.security.runWithUserUid | quote }}
+            - name: RUN_WITH_USER_GID
+              value: {{ .Values.security.runWithUserGid | quote }}
+            - name: CHANGE_OWNERSHIP_ON_FOLDERS
+              value: {{ .Values.security.changeOwnershipOnFolders | quote }}
+            {{- end }}
+            
+          livenessProbe:
+            httpGet:
+              {{- if .Values.webappContext }}
+              path: /{{ .Values.webappContext }}/web/wicket/resource/org.geoserver.web.GeoServerBasePage/img/logo.png
+              {{- else }}
+              path: /geoserver/web/wicket/resource/org.geoserver.web.GeoServerBasePage/img/logo.png
+              {{- end }}
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              {{- if .Values.webappContext }}
+              path: /{{ .Values.webappContext }}/web/wicket/resource/org.geoserver.web.GeoServerBasePage/img/logo.png
+              {{- else }}
+              path: /geoserver/web/wicket/resource/org.geoserver.web.GeoServerBasePage/img/logo.png
+              {{- end }}
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            # GeoServer data directory
+            {{- if .Values.dataDirectory.persistence.enabled }}
+            - name: geoserver-data
+              mountPath: {{ include "geoserver-official.dataDir" . }}
+            {{- end }}
+            
+            # Additional libraries
+            {{- if .Values.additionalLibs.enabled }}
+            - name: additional-libs
+              mountPath: {{ include "geoserver-official.additionalLibsDir" . }}
+            {{- end }}
+            
+            # Additional fonts
+            {{- if .Values.additionalFonts.enabled }}
+            - name: additional-fonts
+              mountPath: {{ include "geoserver-official.additionalFontsDir" . }}
+            {{- end }}
+            
+            # Custom configuration files
+            {{- if and .Values.customConfig.enabled .Values.customConfig.configMapName }}
+            - name: custom-config
+              mountPath: /opt/config_overrides
+            {{- end }}
+            
+            # HTTPS keystore
+            {{- if and .Values.https.enabled .Values.https.keystoreSecret }}
+            - name: https-keystore
+              mountPath: /opt/keystore
+              readOnly: true
+            {{- end }}
+            
+            # Additional volumes
+            {{- range .Values.persistence.additionalVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            
+      volumes:
+        # GeoServer data directory
+        {{- if .Values.dataDirectory.persistence.enabled }}
+        - name: geoserver-data
+          persistentVolumeClaim:
+            {{- if hasKey .Values.dataDirectory "customDataDir" }}
+              {{- if .Values.dataDirectory.customDataDir.enabled }}
+            claimName: {{ .Values.dataDirectory.customDataDir.existingClaim }}
+              {{- else }}
+            claimName: {{ include "geoserver-official.fullname" . }}-data
+              {{- end }}
+            {{- else }}
+            claimName: {{ include "geoserver-official.fullname" . }}-data
+            {{- end }}
+        {{- end }}
+        
+        # Additional libraries
+        {{- if .Values.additionalLibs.enabled }}
+        - name: additional-libs
+          {{- if .Values.additionalLibs.persistentVolumeClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.additionalLibs.persistentVolumeClaim }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+        
+        # Additional fonts
+        {{- if .Values.additionalFonts.enabled }}
+        - name: additional-fonts
+          {{- if .Values.additionalFonts.persistentVolumeClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.additionalFonts.persistentVolumeClaim }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+        
+        # Custom configuration files
+        {{- if and .Values.customConfig.enabled .Values.customConfig.configMapName }}
+        - name: custom-config
+          configMap:
+            name: {{ .Values.customConfig.configMapName }}
+        {{- end }}
+        
+        # HTTPS keystore
+        {{- if and .Values.https.enabled .Values.https.keystoreSecret }}
+        - name: https-keystore
+          secret:
+            secretName: {{ .Values.https.keystoreSecret }}
+        {{- end }}
+        
+        # Additional volumes
+        {{- range .Values.persistence.additionalVolumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            {{- if .existingClaim }}
+            claimName: {{ .existingClaim }}
+            {{- else }}
+            claimName: {{ include "geoserver-official.fullname" $ }}-{{ .name }}
+            {{- end }}
+        {{- end }}
+        
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
