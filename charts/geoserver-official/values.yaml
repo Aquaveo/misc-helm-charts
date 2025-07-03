@@ -99,10 +99,6 @@ dataDirectory:
 
   # Skip demo data for production environments
   skipDemoData: false
-  # Custom data directory from external source (optional)
-  # customDataDir:
-  #   enabled: false
-  #   existingClaim: ""
 
   # Web application context path (default: geoserver)
 webappContext: "geoserver"

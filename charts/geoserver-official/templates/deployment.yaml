@@ -187,7 +187,7 @@ spec:
           volumeMounts:
             # GeoServer data directory
             {{- if .Values.dataDirectory.persistence.enabled }}
-            - name: geoserver-data
+            - name: geoserver-persistent-storage
               mountPath: {{ include "geoserver-official.dataDir" . }}
             {{- end }}
             
@@ -225,17 +225,9 @@ spec:
       volumes:
         # GeoServer data directory
         {{- if .Values.dataDirectory.persistence.enabled }}
-        - name: geoserver-data
+        - name: geoserver-persistent-storage
           persistentVolumeClaim:
-            {{- if hasKey .Values.dataDirectory "customDataDir" }}
-              {{- if .Values.dataDirectory.customDataDir.enabled }}
-            claimName: {{ .Values.dataDirectory.customDataDir.existingClaim }}
-              {{- else }}
-            claimName: {{ include "geoserver-official.fullname" . }}-data
-              {{- end }}
-            {{- else }}
-            claimName: {{ include "geoserver-official.fullname" . }}-data
-            {{- end }}
+            claimName: geoserver-pv-claim
         {{- end }}
         
         # Additional libraries
@@ -272,17 +264,6 @@ spec:
         - name: https-keystore
           secret:
             secretName: {{ .Values.https.keystoreSecret }}
-        {{- end }}
-        
-        # Additional volumes
-        {{- range .Values.persistence.additionalVolumes }}
-        - name: {{ .name }}
-          persistentVolumeClaim:
-            {{- if .existingClaim }}
-            claimName: {{ .existingClaim }}
-            {{- else }}
-            claimName: {{ include "geoserver-official.fullname" $ }}-{{ .name }}
-            {{- end }}
         {{- end }}
         
       {{- with .Values.nodeSelector }}
