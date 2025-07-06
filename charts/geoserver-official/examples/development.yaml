@@ -16,6 +16,7 @@ dataDirectory:
   persistence:
     enabled: true
     size: 5Gi
+    subPath: "" # Use default subPath for development
     # Use default storage class
     # Include demo data for testing
   skipDemoData: false

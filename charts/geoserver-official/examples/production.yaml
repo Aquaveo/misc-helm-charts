@@ -19,6 +19,7 @@ dataDirectory:
     size: 50Gi
     storageClass: "fast-ssd"
     accessMode: ReadWriteOnce
+    subPath: ""
   # Skip demo data for production
   skipDemoData: true
 

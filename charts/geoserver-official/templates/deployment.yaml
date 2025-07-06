@@ -189,6 +189,7 @@ spec:
             {{- if .Values.dataDirectory.persistence.enabled }}
             - name: geoserver-persistent-storage
               mountPath: {{ include "geoserver-official.dataDir" . }}
+              subPath: {{ .Values.dataDirectory.persistence.subPath | default "" }}
             {{- end }}
             
             # Additional libraries

@@ -96,10 +96,10 @@ dataDirectory:
     size: 8Gi
     storageClass: ""
     accessMode: ReadWriteOnce
+    subPath: ""
 
   # Skip demo data for production environments
   skipDemoData: false
-
   # Web application context path (default: geoserver)
 webappContext: "geoserver"
 

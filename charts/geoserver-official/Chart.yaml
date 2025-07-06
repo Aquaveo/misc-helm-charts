@@ -3,7 +3,7 @@ name: geoserver-official
 description: Official GeoServer Helm chart for the OSGeo GeoServer Docker image
 icon: https://geoserver.org/img/geoserver-logo.png
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "2.27.1"
 home: https://geoserver.org/
 sources:
