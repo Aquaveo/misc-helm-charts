@@ -210,3 +210,5 @@ configMap:
 secrets:
   # Add custom secrets
   data: {} # postgres-password: "bXlwYXNzd29yZA=="  # base64 encoded
+
+enableJsonp: true

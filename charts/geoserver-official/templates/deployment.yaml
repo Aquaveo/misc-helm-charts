@@ -155,7 +155,10 @@ spec:
             - name: CHANGE_OWNERSHIP_ON_FOLDERS
               value: {{ .Values.security.changeOwnershipOnFolders | quote }}
             {{- end }}
-            
+
+            - name: ENABLE_JSONP
+              value: {{ .Values.enableJsonp | quote }}
+
           livenessProbe:
             httpGet:
               {{- if .Values.webappContext }}
