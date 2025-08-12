@@ -35,6 +35,18 @@ jobs:
           helm dependency build charts/gs-cloud -v 10
           ls -lah charts/gs-cloud/charts
 
+
+      - name: Debug chart before packaging
+        run: |
+          set -euxo pipefail
+          cat charts/gs-cloud/Chart.yaml
+          test -d charts/gs-cloud/charts
+          ls -lah charts/gs-cloud/charts
+          helm dependency list charts/gs-cloud
+          if [ -f charts/gs-cloud/.helmignore ]; then
+            echo ".helmignore:"; cat charts/gs-cloud/.helmignore; fi
+          helm lint charts/gs-cloud || true
+
       - name: Run chart-releaser for gs-cloud
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
         with:
