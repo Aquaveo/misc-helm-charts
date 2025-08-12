@@ -22,6 +22,19 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Add Helm repos for gs-cloud deps
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add camptocamp https://camptocamp.github.io/helm-geoserver-cloud
+          helm repo add pgcat https://postgresml.github.io/pgcat
+          helm repo update
+
+      - name: Vendor gs-cloud dependencies (debug)
+        run: |
+          rm -f charts/gs-cloud/Chart.lock
+          helm dependency build charts/gs-cloud -v 10
+          ls -lah charts/gs-cloud/charts
+
       - name: Run chart-releaser for gs-cloud
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
         with:
@@ -29,8 +42,6 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name_pattern: "{chartName}"
-          skip_dependencies: false
           charts_dir: charts
 
       - name: Run chart-releaser thredds
