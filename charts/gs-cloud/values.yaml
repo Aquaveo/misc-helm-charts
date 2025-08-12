@@ -1,6 +1,7 @@
 common-image-stuff: &common-image-stuff
   tag: '2.27.2.0'
 
+# TODO: Need to add the jndi datasource
 jndi:
   enabled: false
   name: gs-cloud-cm-jndi-geodata
