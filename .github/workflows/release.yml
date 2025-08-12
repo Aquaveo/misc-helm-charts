@@ -28,7 +28,7 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_dependencies: false
           charts_dir: charts/gs-cloud
 
@@ -38,7 +38,7 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/thredds
 
       - name: Run chart-releaser geoserver
@@ -47,7 +47,7 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/geoserver
 
       - name: Run chart-releaser postgis
@@ -56,7 +56,7 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/postgis
 
       - name: Run chart-releaser djangocms
@@ -65,7 +65,7 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/djangocms
 
       - name: Run chart-releaser geoserver-official
@@ -74,5 +74,5 @@ jobs:
           oci_registry: ghcr.io/aquaveo
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts/geoserver-official
