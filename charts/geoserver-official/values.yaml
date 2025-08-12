@@ -1,0 +1,214 @@
+# Default values for geoserver-official.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: docker.osgeo.org/geoserver
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 999
+
+securityContext:
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+  - host: geoserver.local
+    paths:
+    - path: /
+      pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# GeoServer specific configuration
+# Admin credentials - set these for initial setup, then remove them
+admin:
+  user: admin
+  password: geoserver
+
+# Data directory configuration
+dataDirectory:
+  # Enable persistent storage for data directory
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    subPath: ""
+
+  # Skip demo data for production environments
+  skipDemoData: false
+  # Web application context path (default: geoserver)
+webappContext: "geoserver"
+
+# Enable redirect from root to /geoserver/web
+rootWebappRedirect: false
+
+# JVM configuration
+jvm:
+  # Memory settings (can use EXTRA_JAVA_OPTS for more options)
+  extraJavaOpts: "-Xms512m -Xmx2g"
+
+# Extension configuration
+extensions:
+  # Enable automatic extension installation
+  install: false
+  # List of stable extensions to install
+  stable: []
+    # - "wps"
+    # - "ysld"
+    # - "css"
+  # List of community extensions to install (snapshot builds only)
+  community: []
+    # - "ogcapi-features"
+    # - "ogcapi-maps"
+
+# Additional libraries and fonts
+additionalLibs:
+  # Enable mounting additional JAR files
+  enabled: false
+  # persistentVolumeClaim: ""
+  # Path where additional libs are stored
+  # path: "/opt/additional_libs"
+
+additionalFonts:
+  # Enable mounting additional fonts
+  enabled: false
+  # persistentVolumeClaim: ""
+  # Path where additional fonts are stored
+  # path: "/opt/additional_fonts"
+
+  # CORS configuration
+cors:
+  enabled: false
+  allowedOrigins: "*"
+  allowedMethods: "GET,POST,PUT,DELETE,HEAD,OPTIONS"
+  allowedHeaders: "Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers"
+  allowCredentials: false
+
+# PostgreSQL JNDI configuration
+postgres:
+  jndi:
+    enabled: false
+    host: ""
+    port: 5432
+    database: ""
+    username: ""
+    password: ""
+    resourceName: "jdbc/postgres"
+
+# HTTPS configuration
+https:
+  enabled: false
+  keystoreFile: "/opt/keystore.jks"
+  keystorePassword: "changeit"
+  keyAlias: "server"
+  # Secret containing the keystore file
+  # keystoreSecret: ""
+
+  # Custom configuration files
+customConfig:
+  # Enable custom server.xml, web.xml, etc.
+  enabled: false
+  # ConfigMap containing custom configuration files
+  # configMapName: ""
+
+  # Proxy configuration (if behind a reverse proxy)
+proxyBaseUrl: ""
+
+# Health check configuration
+healthCheck:
+  url: ""
+
+# Security: Run as unprivileged user
+security:
+  runUnprivileged: true
+  runWithUserUid: 999
+  runWithUserGid: 999
+  changeOwnershipOnFolders: "/opt /opt/geoserver_data/"
+
+# Persistence for additional volumes
+persistence:
+  additionalVolumes: []
+    # - name: custom-data
+    #   size: 10Gi
+    #   storageClass: ""
+    #   accessMode: ReadWriteOnce
+    #   mountPath: "/mnt/custom-data"
+
+# ConfigMap for custom configuration
+configMap:
+  # Add custom configuration files
+  files: {}
+    # custom-server.xml: |
+    #   <?xml version="1.0" encoding="UTF-8"?>
+    #   <!-- Custom server.xml content -->
+
+# Secrets for sensitive data
+secrets:
+  # Add custom secrets
+  data: {} # postgres-password: "bXlwYXNzd29yZA=="  # base64 encoded
+
+enableJsonp: true

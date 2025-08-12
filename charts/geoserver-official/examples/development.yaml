@@ -1,0 +1,88 @@
+# Development deployment example
+# Use this for development and testing environments
+
+replicaCount: 1
+
+image:
+  repository: docker.osgeo.org/geoserver
+  tag: "2.27.1"
+  pullPolicy: Always # Always pull latest for development
+
+admin:
+  user: admin
+  password: geoserver # Default password for development
+
+dataDirectory:
+  persistence:
+    enabled: true
+    size: 5Gi
+    subPath: "" # Use default subPath for development
+    # Use default storage class
+    # Include demo data for testing
+  skipDemoData: false
+
+webappContext: "geoserver"
+rootWebappRedirect: true
+
+jvm:
+  # Smaller memory footprint for development
+  extraJavaOpts: "-Xms256m -Xmx1g"
+
+# Install extensions for testing
+extensions:
+  install: true
+  stable:
+  - "wps" # Web Processing Service
+  - "css" # CSS styling
+  - "ysld" # YAML styling
+  - "control-flow" # Rate limiting
+  - "monitor" # Performance monitoring
+  # Enable community extensions for testing (snapshot builds only)
+  community:
+  - "ogcapi-features"
+  - "ogcapi-maps"
+
+# Enable CORS for local development
+cors:
+  enabled: true
+  allowedOrigins: "*"
+  allowCredentials: false
+
+# Security configuration
+security:
+  runUnprivileged: true
+
+# Minimal resources for development
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+# Simple service exposure
+service:
+  type: NodePort
+  port: 8080
+
+# Optional ingress for local testing
+ingress:
+  enabled: false
+  className: ""
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+  - host: geoserver.local
+    paths:
+    - path: /
+      pathType: Prefix
+
+# Development-friendly settings
+podAnnotations:
+  description: "Development GeoServer instance"
+
+# No restrictions for development
+nodeSelector: {}
+tolerations: []
+affinity: {}

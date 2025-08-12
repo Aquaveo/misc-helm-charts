@@ -55,10 +55,16 @@ spec:
             - name: geoserver-persistent-storage
               mountPath: '/var/geoserver/data'
               subPath: geoserver
+            - name: nginx-config-map-volume
+              mountPath: /etc/nginx/sites-enabled/default
+              subPath: default
       volumes:
         - name: geoserver-persistent-storage
           persistentVolumeClaim:
             claimName: geoserver-pv-claim
+        - name: nginx-config-map-volume
+          configMap:
+            name: nginx-config-map            
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

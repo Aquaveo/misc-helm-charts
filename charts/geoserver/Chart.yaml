@@ -4,4 +4,4 @@ description: 'Helm chart for GeoServer which is an open source server for sharin
 icon: https://geoserver.org/img/geoserver-logo.png
 name: 'geoserver'
 type: 'application'
-version: 0.2.2
+version: 0.2.3

@@ -1,0 +1,13 @@
+{{- if or .Values.configMap.files .Values.customConfig.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "geoserver-official.fullname" . }}-config
+  labels:
+    {{- include "geoserver-official.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.configMap.files }}
+  {{ $key }}: |
+    {{- $value | nindent 4 }}
+  {{- end }}
+{{- end }}
