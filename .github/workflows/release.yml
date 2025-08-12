@@ -43,7 +43,7 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
 
       - name: Run chart-releaser thredds
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -53,7 +53,7 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
 
       - name: Run chart-releaser geoserver
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -63,7 +63,7 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
           
       - name: Run chart-releaser postgis
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -73,7 +73,7 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
 
       - name: Run chart-releaser djangocms
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -83,7 +83,7 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
 
       - name: Run chart-releaser geoserver-official
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -93,4 +93,4 @@ jobs:
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           charts_dir: charts
-          skip-gh-release: false
+          skip_gh_release: false
