@@ -13,7 +13,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -31,7 +31,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_name_pattern: "{chartName}"
           skip_dependencies: false
-          charts_dir: charts/gs-cloud
+          charts_dir: charts
 
       - name: Run chart-releaser thredds
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -40,7 +40,7 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          charts_dir: charts/thredds
+          charts_dir: charts
 
       - name: Run chart-releaser geoserver
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -49,7 +49,7 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          charts_dir: charts/geoserver
+          charts_dir: charts
 
       - name: Run chart-releaser postgis
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -58,7 +58,7 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          charts_dir: charts/postgis
+          charts_dir: charts
 
       - name: Run chart-releaser djangocms
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -67,7 +67,7 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          charts_dir: charts/djangocms
+          charts_dir: charts
 
       - name: Run chart-releaser geoserver-official
         uses: bitdeps/helm-oci-charts-releaser@v0.1.4
@@ -76,4 +76,4 @@ jobs:
           oci_username: aquaveo
           oci_password: ${{ secrets.GITHUB_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          charts_dir: charts/geoserver-official
+          charts_dir: charts
