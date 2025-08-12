@@ -1,5 +1,5 @@
 common-image-stuff: &common-image-stuff
-  tag: '2.26.2.0'
+  tag: '2.27.2.0'
 
 jndi:
   enabled: false
@@ -164,7 +164,7 @@ env: &env-override
 horizontal-pod-autoscaler: &horizontal-pod-autoscaler
   enabled: true
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 3
   metrics:
     - type: Resource
       resource:
@@ -295,6 +295,8 @@ geoservercloud:
         replicaCount: 1
         <<: *additional-configuration
 
+      acl:
+        enabled: false
 
 pgcat:
   enabled: false
