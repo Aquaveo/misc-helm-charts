@@ -70,6 +70,9 @@ persistent:
 postgresql:
   enabled: false
   image:
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: latest
     debug: true
   global:
     postgresql:
@@ -105,7 +108,7 @@ rabbitmq:
   image:
     registry: docker.io
     repository: bitnami/rabbitmq
-    tag: 3.9.13-debian-10-r14
+    tag: latest
 
   auth:
     username: geoserver
