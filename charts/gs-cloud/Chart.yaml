@@ -3,16 +3,16 @@ appVersion: '1.0'
 description: 'Helm chart for GeoServer Cloud.'
 icon: https://avatars.githubusercontent.com/u/186522?s=48&v=4
 name: gs-cloud
-version: 0.1.7
+version: 0.1.8
 dependencies:
   - name: 'rabbitmq'
-    version: 15.0.0
+    version: '*'
     repository: 'https://charts.bitnami.com/bitnami'
     condition: rabbitmq.enabled
 
   - name: 'postgresql'
     repository: 'https://charts.bitnami.com/bitnami'
-    version: 14.0.0
+    version: 16.0.0
     condition: postgresql.enabled
 
   - name: geoservercloud
