@@ -8,12 +8,12 @@ data:
     #!/bin/bash
     set -e
     echo "Creating PostGIS extension..."
-    psql -U {{ .Values.postgresql.postgresql.auth.user | default "postgres" }} \
-    -d {{ .Values.postgresql.postgresql.auth.database | default "postgres" }} \
+    psql -U {{ .Values.postgresql.auth.user | default "postgres" }} \
+    -d {{ .Values.postgresql.auth.database | default "postgres" }} \
     -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 {{- if .Values.jndi.enabled }}
   create_schemas.sql: |
-    \c {{ .Values.postgresql.postgresql.auth.database | default "postgres" }}
+    \c {{ .Values.postgresql.auth.database | default "postgres" }}
     CREATE SCHEMA data;
     CREATE SCHEMA config;
 {{- end }}
