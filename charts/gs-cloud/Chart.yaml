@@ -7,11 +7,11 @@ version: 0.1.10
 dependencies:
   - name: 'rabbitmq'
     version: '*'
-    repository: 'oci://registry-1.docker.io/cloudpirates'
+    repository: 'oci://registry-1.docker.io/cloudpirates/rabbitmq'
     condition: rabbitmq.enabled
 
   - name: 'postgresql'
-    repository: 'oci://registry-1.docker.io/cloudpirates'
+    repository: 'oci://registry-1.docker.io/cloudpirates/postgres'
     version: '*'
     condition: postgresql.enabled
 
