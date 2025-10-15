@@ -7,12 +7,12 @@ version: 0.1.10
 dependencies:
   - name: 'rabbitmq'
     version: '*'
-    repository: 'oci://ghcr.io/cloudpirates-io'
+    repository: 'oci://ghcr.io/cloudpirates-io/helm-charts'
     condition: rabbitmq.enabled
 
   - name: 'postgres'
     alias: postgresql
-    repository: 'oci://ghcr.io/cloudpirates-io'
+    repository: 'oci://ghcr.io/cloudpirates-io/helm-charts'
     version: '*'
     condition: postgresql.enabled
 
