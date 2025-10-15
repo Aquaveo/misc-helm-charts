@@ -24,7 +24,7 @@ jobs:
 
       - name: Add Helm repos for gs-cloud deps
         run: |
-          helm repo add bitnami oci://registry-1.docker.io/cloudpirates'
+          helm repo add bitnami oci://registry-1.docker.io/cloudpirates
           helm repo add camptocamp https://camptocamp.github.io/helm-geoserver-cloud
           helm repo add pgcat https://postgresml.github.io/pgcat
           helm repo update
