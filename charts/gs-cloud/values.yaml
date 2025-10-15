@@ -68,28 +68,20 @@ persistent:
       - *storage-class-common-values
 
 postgresql:
-  enabled: false
-  image:
-    registry: docker.io
-    repository: bitnami/postgresql
-    tag: latest
-    debug: true
-  global:
-    postgresql:
-      auth:
-        # this should be replaced by your existing secret
-        # existingSecret: your-secret-name
-        postgresPassword: g30s3rv3r
-        ## If using a different username, db and password if not, using default postgres user and db
-        # username: "admin"
-        # password: "pass"
-        # database: "oscloud"
   fullnameOverride: 'gs-cloud-psql'
-
-  primary:
-    initdb:
-      # scriptsConfigMap: init-pqsl-db
-      scriptsConfigMap: init-db
+  enabled: false
+  auth:
+    # this should be replaced by your existing secret
+    # existingSecret: your-secret-name
+    secretKeys:
+      passwordKey: postgresql-password #g30s3rv3r
+    ## If using a different username, db and password if not, using default postgres user and db
+    # username: "admin"
+    # password: "pass"
+    # database: "oscloud"
+  initdb:
+    # scriptsConfigMap: init-pqsl-db
+    scriptsConfigMap: init-db
     
   containerPorts:
     postgresql: 5432
@@ -104,11 +96,6 @@ rabbitmq:
     requests:
       cpu: 0.1
       memory: 512Mi
-
-  image:
-    registry: docker.io
-    repository: bitnami/rabbitmq
-    tag: latest
 
   auth:
     username: geoserver
