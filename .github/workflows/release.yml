@@ -28,6 +28,26 @@ jobs:
           helm repo add pgcat https://postgresml.github.io/pgcat
           helm repo update
 
+      - name: Run chart-releaser for base
+        uses: bitdeps/helm-oci-charts-releaser@v0.1.4
+        with:
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
+          oci_password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          charts_dir: charts
+          skip_gh_release: false
+
+      - name: Run chart-releaser for redis
+        uses: bitdeps/helm-oci-charts-releaser@v0.1.4
+        with:
+          oci_registry: ghcr.io/aquaveo
+          oci_username: aquaveo
+          oci_password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          charts_dir: charts
+          skip_gh_release: false
+
       - name: Vendor gs-cloud dependencies
         run: |
           rm -f charts/gs-cloud/Chart.lock
