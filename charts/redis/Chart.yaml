@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://json.schemastore.org/chart.json
+apiVersion: v2
+type: application
+name: redis
+description: A Helm chart for Redis
+version: 2.1.0
+# renovate: image=redis
+appVersion: "8.4.0"
+
+sources:
+  - https://github.com/docker-library/redis
+  - https://github.com/redis/redis
+  - https://redis.io
+keywords:
+  - redis
+maintainers:
+  - name: aquaveo
+    email: gromero@aquaveo.com
+    url: https://aquaveo.com
+
+dependencies:
+  - name: base
+    version: 1.2.0
+    repository: 'oci://ghcr.io/aquaveo'
+
+annotations:
+  # possible kinds: added, changed, deprecated, removed, fixed, security
+  artifacthub.io/changes: |
+    - kind: added
+      description: 'Support affinity, tolerations and node selector fields.'
+    - kind: added
+      description: 'Support extra volumes and extra volume mounts.'
+    - kind: added
+      description: 'Support extra containers.'
+    - kind: added
+      description: 'Support image pull secrets.'
