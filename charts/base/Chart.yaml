@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://json.schemastore.org/chart.json
+apiVersion: v2
+type: library
+name: base
+description: A Helm chart for Kubernetes
+version: 1.2.0
+appVersion: ""
+
+sources:
+  - https://github.com/aquaveo/misc-helm-charts
+keywords:
+  - library-chart
+maintainers:
+  - name: aquaveo
+    email: gromero@aquaveo.com
+    url: https://aquaveo.com
+
+annotations:
+  # possible kinds: added, changed, deprecated, removed, fixed, security
+  artifacthub.io/changes: |
+    - kind: added
+      description: 'Added helpers for environment variables.'
