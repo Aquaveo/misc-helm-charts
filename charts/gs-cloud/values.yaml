@@ -96,10 +96,6 @@ rabbitmq:
     requests:
       cpu: 0.1
       memory: 512Mi
-  image:
-    registry: docker.io
-    repository: bitnamilegacy/rabbitmq
-    tag: 3.13.3-debian-12-r0
 
   auth:
     username: geoserver
@@ -139,7 +135,7 @@ env: &env-override
   RABBITMQ_PASSWORD:
     type: secret
     name: 'gs-cloud-rabbitmq'
-    key: 'rabbitmq-password'
+    key: 'password'
   GEOWEBCACHE_CACHE_DIR:
     value: '/mnt/cache'
   SPRING_PROFILES_ACTIVE:
